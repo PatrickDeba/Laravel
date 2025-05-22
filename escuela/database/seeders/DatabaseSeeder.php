@@ -3,22 +3,26 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\AlumnoSeeder;
-use Database\Seeders\ProfesorSeeder;
-use Database\Seeders\CursoSeeder;
+use App\Models\Profesor;
+use App\Models\Curso;
+use App\Models\Alumno;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Llamamos a los seeders en orden
-        $this->call([
-            AlumnoSeeder::class,
-            ProfesorSeeder::class,
-            CursoSeeder::class,
-        ]);
+        // Crear 5 profesores
+        $profesores = Profesor::factory(5)->create();
+
+        // Crear 10 cursos y asignar profesor aleatorio
+        $cursos = Curso::factory(10)->make()->each(function ($curso) use ($profesores) {
+            $curso->profesor_id = $profesores->random()->id;
+            $curso->save();
+        });
+
+        // Crear 20 alumnos y matricularlos en 2 cursos aleatorios cada uno
+        Alumno::factory(20)->create()->each(function ($alumno) use ($cursos) {
+            $alumno->cursos()->attach($cursos->random(2));
+        });
     }
 }
